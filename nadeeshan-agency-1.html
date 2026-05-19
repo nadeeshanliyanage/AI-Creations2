@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NL Creative — AI-Powered Creative Agency</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080808;
+    --surface: #0f0f0f;
+    --card: #141414;
+    --accent: #ff3c00;
+    --accent2: #ffcc00;
+    --accent3: #00e5ff;
+    --text: #f0ede8;
+    --muted: #555;
+    --border: #1e1e1e;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom Cursor */
+  .cursor {
+    position: fixed;
+    width: 12px; height: 12px;
+    background: var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s, width 0.2s, height 0.2s, background 0.2s;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1.5px solid rgba(255,60,0,0.5);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: all 0.18s ease;
+  }
+  .cursor.hover { width: 20px; height: 20px; background: var(--accent2); }
+  .cursor-ring.hover { width: 56px; height: 56px; border-color: var(--accent2); }
+
+  /* Noise overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 500;
+    padding: 24px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.3s, background 0.3s;
+  }
+  nav.scrolled {
+    background: rgba(8,8,8,0.92);
+    border-color: var(--border);
+    backdrop-filter: blur(12px);
+  }
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--accent); }
+  .nav-links { display: flex; gap: 36px; list-style: none; }
+  .nav-links a {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    background: var(--accent);
+    color: white !important;
+    padding: 10px 20px;
+    font-size: 11px !important;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: 'DM Mono', monospace;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.2s !important;
+    display: inline-block;
+  }
+  .nav-cta:hover { background: #d43200 !important; transform: translateY(-1px) !important; color: white !important; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 48px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 60% at 80% 20%, rgba(255,60,0,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 20% 80%, rgba(0,229,255,0.06) 0%, transparent 50%);
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,60,0,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,60,0,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+  }
+
+  .hero-ticker {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    overflow: hidden;
+    opacity: 0.03;
+    pointer-events: none;
+  }
+  .ticker-text {
+    display: inline-block;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 200px;
+    letter-spacing: 20px;
+    animation: ticker 20s linear infinite;
+    color: var(--text);
+  }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.3s forwards;
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(72px, 10vw, 160px);
+    line-height: 0.9;
+    letter-spacing: 2px;
+    position: relative;
+    z-index: 1;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.5s forwards;
+  }
+  .hero-title em {
+    font-style: normal;
+    color: var(--accent);
+    display: block;
+  }
+  .hero-title .outline {
+    -webkit-text-stroke: 1.5px var(--text);
+    color: transparent;
+    display: block;
+  }
+
+  .hero-sub {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    margin-top: 48px;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.8s forwards;
+  }
+  .hero-desc {
+    max-width: 360px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #888;
+    font-weight: 400;
+  }
+  .hero-btns { display: flex; gap: 16px; flex-shrink: 0; }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    padding: 16px 36px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: transform 0.2s, background 0.2s;
+    display: inline-block;
+  }
+  .btn-primary:hover { background: #d43200; transform: translateY(-2px); }
+  .btn-ghost {
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 16px 36px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: border-color 0.2s, transform 0.2s;
+    display: inline-block;
+  }
+  .btn-ghost:hover { border-color: var(--text); transform: translateY(-2px); }
+
+  .hero-scroll {
+    position: absolute;
+    bottom: 40px;
+    right: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    animation: fadeIn 1s 1.2s forwards;
+  }
+  .hero-scroll span {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    writing-mode: vertical-rl;
+  }
+  .scroll-line {
+    width: 1px;
+    height: 60px;
+    background: linear-gradient(to bottom, var(--accent), transparent);
+    animation: scrollLine 1.5s ease-in-out infinite;
+  }
+  @keyframes scrollLine {
+    0%, 100% { transform: scaleY(1); opacity: 1; }
+    50% { transform: scaleY(0.5); opacity: 0.4; }
+  }
+
+  /* MARQUEE */
+  .marquee-section {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 0;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .marquee-track {
+    display: flex;
+    gap: 0;
+    white-space: nowrap;
+    animation: marquee 18s linear infinite;
+  }
+  .marquee-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 0 40px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .marquee-item .dot {
+    width: 5px; height: 5px;
+    background: var(--accent);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .marquee-item.accent-item { color: var(--accent); }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* SERVICES */
+  .section {
+    padding: 120px 48px;
+  }
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    max-width: 60px;
+    height: 1px;
+    background: var(--accent);
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 6vw, 88px);
+    line-height: 0.95;
+    letter-spacing: 1px;
+    margin-bottom: 64px;
+  }
+  .section-title span { color: var(--accent); }
+
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .service-card {
+    background: var(--card);
+    padding: 48px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+    cursor: none;
+  }
+  .service-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 0; height: 2px;
+    background: var(--accent);
+    transition: width 0.4s ease;
+  }
+  .service-card:hover::before { width: 100%; }
+  .service-card:hover { background: #181818; }
+
+  .service-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 64px;
+    color: var(--border);
+    line-height: 1;
+    position: absolute;
+    top: 24px; right: 32px;
+    transition: color 0.3s;
+  }
+  .service-card:hover .service-num { color: rgba(255,60,0,0.15); }
+
+  .service-icon {
+    width: 48px; height: 48px;
+    margin-bottom: 24px;
+    color: var(--accent);
+  }
+  .service-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .service-desc {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #666;
+    margin-bottom: 24px;
+  }
+  .service-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  /* ABOUT STRIP */
+  .about-strip {
+    padding: 100px 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+    border-top: 1px solid var(--border);
+  }
+  .about-left .big-stat {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 120px;
+    line-height: 0.9;
+    color: var(--accent);
+    display: block;
+  }
+  .about-left .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+  .about-right .about-heading {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    line-height: 1;
+    margin-bottom: 24px;
+  }
+  .about-right p {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #777;
+    margin-bottom: 16px;
+  }
+  .about-right p strong { color: var(--text); font-weight: 600; }
+  .skills-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 32px;
+  }
+  .skill-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .skill-pill:hover { border-color: var(--accent); color: var(--accent); }
+  .skill-pill.hot { border-color: var(--accent); color: var(--accent); }
+
+  /* TOOLS */
+  .tools-section {
+    padding: 80px 48px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 48px;
+  }
+  .tool-item {
+    background: var(--card);
+    padding: 28px 20px;
+    text-align: center;
+    transition: background 0.2s;
+  }
+  .tool-item:hover { background: #1a1a1a; }
+  .tool-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #555;
+    margin-top: 8px;
+    transition: color 0.2s;
+  }
+  .tool-item:hover .tool-name { color: var(--text); }
+  .tool-emoji { font-size: 28px; }
+
+  /* PROCESS */
+  .process-section {
+    padding: 120px 48px;
+  }
+  .process-steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 64px;
+  }
+  .step {
+    background: var(--card);
+    padding: 40px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .step-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 80px;
+    color: rgba(255,60,0,0.08);
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+  .step-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .step-desc {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #555;
+  }
+  .step-line {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 3px;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+  .step:hover .step-line { background: var(--accent); }
+
+  /* CTA */
+  .cta-section {
+    padding: 140px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+  }
+  .cta-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 70% at 50% 50%, rgba(255,60,0,0.07) 0%, transparent 70%);
+  }
+  .cta-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(60px, 9vw, 130px);
+    line-height: 0.9;
+    letter-spacing: 2px;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 32px;
+  }
+  .cta-title span { color: var(--accent); }
+  .cta-sub {
+    font-size: 16px;
+    color: #666;
+    max-width: 400px;
+    margin: 0 auto 48px;
+    line-height: 1.7;
+    position: relative;
+    z-index: 1;
+  }
+  .cta-email {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    color: var(--accent3);
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent3);
+    padding-bottom: 2px;
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+    transition: color 0.2s;
+  }
+  .cta-email:hover { color: white; border-color: white; }
+
+  /* FOOTER */
+  footer {
+    padding: 40px 48px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 3px;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .footer-logo span { color: var(--accent); }
+  .footer-copy {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+  }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--text); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    nav { padding: 20px 24px; }
+    .nav-links { display: none; }
+    .hero { padding: 0 24px 60px; }
+    .hero-sub { flex-direction: column; align-items: flex-start; gap: 24px; }
+    .section, .about-strip, .tools-section, .process-section, .cta-section { padding: 80px 24px; }
+    .services-grid { grid-template-columns: 1fr; }
+    .about-strip { grid-template-columns: 1fr; gap: 40px; }
+    .tools-grid { grid-template-columns: repeat(3, 1fr); }
+    .process-steps { grid-template-columns: repeat(2, 1fr); }
+    footer { flex-direction: column; gap: 20px; text-align: center; }
+    .footer-links { flex-wrap: wrap; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">NL<span>.</span>CREATIVE</a>
+  <ul class="nav-links">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#tools">Tools</a></li>
+    <li><a href="#process">Process</a></li>
+    <li><a href="#contact" class="nav-cta">Let's Work</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-ticker">
+    <span class="ticker-text">AI CREATIVE · VIDEO PRODUCTION · GRAPHIC DESIGN · GAME DEVELOPMENT · AI CREATIVE · VIDEO PRODUCTION · GRAPHIC DESIGN · GAME DEVELOPMENT · </span>
+  </div>
+
+  <div class="hero-eyebrow">— Sri Lanka's AI-Powered Creative Studio</div>
+  <h1 class="hero-title">
+    <span class="outline">WE MAKE</span>
+    <em>BOLD</em>
+    CREATIVE
+  </h1>
+  <div class="hero-sub">
+    <p class="hero-desc">AI-driven advertising, cinematic video production, graphic design & 2D game development — all under one roof.</p>
+    <div class="hero-btns">
+      <a href="#services" class="btn-primary">See Services</a>
+      <a href="#contact" class="btn-ghost">Start a Project</a>
+    </div>
+  </div>
+
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section">
+  <div class="marquee-track">
+    <span class="marquee-item"><span class="dot"></span> AI Advertising</span>
+    <span class="marquee-item accent-item"><span class="dot"></span> Video Production</span>
+    <span class="marquee-item"><span class="dot"></span> Graphic Design</span>
+    <span class="marquee-item accent-item"><span class="dot"></span> 2D Game Dev</span>
+    <span class="marquee-item"><span class="dot"></span> TikTok Ads</span>
+    <span class="marquee-item accent-item"><span class="dot"></span> AI Photo Editing</span>
+    <span class="marquee-item"><span class="dot"></span> Voiceover</span>
+    <span class="marquee-item accent-item"><span class="dot"></span> Motion Graphics</span>
+    <!-- Duplicate for seamless loop -->
+    <span class="marquee-item"><span class="dot"></span> AI Advertising</span>
+    <span class="marquee-item accent-item"><span class="dot"></span> Video Production</span>
+    <span class="marquee-item"><span class="dot"></span> Graphic Design</span>
+    <span class="marquee-item accent-item"><span class="dot"></span> 2D Game Dev</span>
+    <span class="marquee-item"><span class="dot"></span> TikTok Ads</span>
+    <span class="marquee-item accent-item"><span class="dot"></span> AI Photo Editing</span>
+    <span class="marquee-item"><span class="dot"></span> Voiceover</span>
+    <span class="marquee-item accent-item"><span class="dot"></span> Motion Graphics</span>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section class="section" id="services">
+  <div class="section-label">What We Do</div>
+  <h2 class="section-title reveal">Our <span>Services</span></h2>
+  <div class="services-grid reveal">
+    <div class="service-card">
+      <span class="service-num">01</span>
+      <svg class="service-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="4" y="10" width="40" height="28" rx="2"/>
+        <path d="M20 20l8 4-8 4V20z" fill="currentColor" stroke="none"/>
+      </svg>
+      <div class="service-name">AI Video Ads</div>
+      <p class="service-desc">TikTok, Instagram & YouTube ads crafted with AI-driven video tools. From concept to final cut with cinematic quality.</p>
+      <div class="service-tags">
+        <span class="tag">Kling AI</span>
+        <span class="tag">Runway ML</span>
+        <span class="tag">CapCut</span>
+        <span class="tag">ElevenLabs</span>
+      </div>
+    </div>
+    <div class="service-card">
+      <span class="service-num">02</span>
+      <svg class="service-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="6" y="6" width="36" height="36" rx="2"/>
+        <path d="M14 34l8-12 6 8 4-6 8 10H14z" stroke="none" fill="currentColor" opacity="0.6"/>
+        <circle cx="30" cy="18" r="4"/>
+      </svg>
+      <div class="service-name">AI Photo & Visuals</div>
+      <p class="service-desc">Hyper-realistic product shots, campaign visuals and brand imagery generated with cutting-edge AI image tools.</p>
+      <div class="service-tags">
+        <span class="tag">Midjourney</span>
+        <span class="tag">Stable Diffusion</span>
+        <span class="tag">Photoshop AI</span>
+      </div>
+    </div>
+    <div class="service-card">
+      <span class="service-num">03</span>
+      <svg class="service-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M8 40V20l16-12 16 12v20H8z"/>
+        <rect x="18" y="28" width="12" height="12"/>
+        <path d="M24 8v4M16 12l2 3M32 12l-2 3"/>
+      </svg>
+      <div class="service-name">Graphic Design</div>
+      <p class="service-desc">Brand identities, social media creatives, packaging and print design that commands attention and builds recognition.</p>
+      <div class="service-tags">
+        <span class="tag">Brand Identity</span>
+        <span class="tag">Social Media</span>
+        <span class="tag">Print</span>
+      </div>
+    </div>
+    <div class="service-card">
+      <span class="service-num">04</span>
+      <svg class="service-icon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="4" y="8" width="40" height="32" rx="2"/>
+        <path d="M18 20l4 4-4 4M26 28h4" stroke-linecap="round"/>
+      </svg>
+      <div class="service-name">2D Game Development</div>
+      <p class="service-desc">Engaging 2D games built from scratch — game design, art, mechanics and deployment across platforms.</p>
+      <div class="service-tags">
+        <span class="tag">Game Design</span>
+        <span class="tag">2D Art</span>
+        <span class="tag">Mobile</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about-strip" id="about">
+  <div class="about-left reveal">
+    <span class="big-stat">AI</span>
+    <span class="big-stat" style="color: var(--accent2); margin-top: -10px; display: block;">FIRST</span>
+    <div class="stat-label">Every project, every time</div>
+  </div>
+  <div class="about-right reveal">
+    <h3 class="about-heading">Built Different.<br>Powered by AI.</h3>
+    <p>NL Creative is a <strong>solo creative powerhouse</strong> based in Sri Lanka, blending traditional design craft with the latest AI production tools to deliver results that agencies charge 10× more for.</p>
+    <p>From a <strong>TikTok ad for a chocolate brand</strong> to a full 2D game — every project gets the same obsessive attention to craft and storytelling.</p>
+    <div class="skills-row">
+      <span class="skill-pill hot">AI Advertising</span>
+      <span class="skill-pill hot">Video Production</span>
+      <span class="skill-pill">Graphic Design</span>
+      <span class="skill-pill">2D Game Dev</span>
+      <span class="skill-pill">Voiceover</span>
+      <span class="skill-pill">Motion Graphics</span>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS -->
+<section class="tools-section" id="tools">
+  <div class="section-label">Our Arsenal</div>
+  <h2 class="section-title reveal">The <span>Tools</span></h2>
+  <div class="tools-grid reveal">
+    <div class="tool-item">
+      <div class="tool-emoji">🎨</div>
+      <div class="tool-name">Midjourney</div>
+    </div>
+    <div class="tool-item">
+      <div class="tool-emoji">🎬</div>
+      <div class="tool-name">Kling AI</div>
+    </div>
+    <div class="tool-item">
+      <div class="tool-emoji">🚀</div>
+      <div class="tool-name">Runway ML</div>
+    </div>
+    <div class="tool-item">
+      <div class="tool-emoji">✂️</div>
+      <div class="tool-name">CapCut</div>
+    </div>
+    <div class="tool-item">
+      <div class="tool-emoji">🔊</div>
+      <div class="tool-name">ElevenLabs</div>
+    </div>
+    <div class="tool-item">
+      <div class="tool-emoji">🕹️</div>
+      <div class="tool-name">Game Engine</div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="process-section" id="process">
+  <div class="section-label">How We Work</div>
+  <h2 class="section-title reveal">The <span>Process</span></h2>
+  <div class="process-steps reveal">
+    <div class="step">
+      <div class="step-line"></div>
+      <div class="step-num">01</div>
+      <div class="step-title">Brief</div>
+      <p class="step-desc">We deep-dive into your brand, goals and audience to build a clear creative direction before a single pixel is made.</p>
+    </div>
+    <div class="step">
+      <div class="step-line"></div>
+      <div class="step-num">02</div>
+      <div class="step-title">Concept</div>
+      <p class="step-desc">Scripts, storyboards and mood boards are developed and refined until the concept is locked and agreed upon.</p>
+    </div>
+    <div class="step">
+      <div class="step-line"></div>
+      <div class="step-num">03</div>
+      <div class="step-title">Produce</div>
+      <p class="step-desc">AI tools + creative direction combine to produce high-quality assets fast — without cutting corners on quality.</p>
+    </div>
+    <div class="step">
+      <div class="step-line"></div>
+      <div class="step-num">04</div>
+      <div class="step-title">Deliver</div>
+      <p class="step-desc">Final files delivered in every format you need, ready to publish, run as ads, or hand off to your team.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="contact">
+  <div class="cta-bg"></div>
+  <h2 class="cta-title reveal">
+    LET'S<br>
+    <span>BUILD</span><br>
+    SOMETHING
+  </h2>
+  <p class="cta-sub reveal">Got a project in mind? Drop a message and let's make something that turns heads.</p>
+  <a href="mailto:hello@nlcreative.lk" class="cta-email reveal">HELLO@NLCREATIVE.LK</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#" class="footer-logo">NL<span>.</span>CREATIVE</a>
+  <div class="footer-links">
+    <a href="#services">Services</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <div class="footer-copy">© 2026 NL Creative — Sri Lanka</div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  function animCursor() {
+    cursor.style.left = mx + 'px';
+    cursor.style.top = my + 'px';
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top = ry + 'px';
+    requestAnimationFrame(animCursor);
+  }
+  animCursor();
+  document.querySelectorAll('a, button, .service-card, .tool-item, .step').forEach(el => {
+    el.addEventListener('mouseenter', () => { cursor.classList.add('hover'); ring.classList.add('hover'); });
+    el.addEventListener('mouseleave', () => { cursor.classList.remove('hover'); ring.classList.remove('hover'); });
+  });
+
+  // Nav scroll
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
